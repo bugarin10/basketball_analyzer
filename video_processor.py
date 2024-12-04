@@ -14,7 +14,7 @@ class VideoProcessor:
     
     def execute(self):
         if self.videos:
-            self.video_paths = [os.path.join(self.unprocessed_directory, vid) for vid in self.videos]
+            video_count = 0
             for video_name in self.videos:
                 try:
                     video_path = os.path.join(self.unprocessed_directory, video_name)
@@ -22,21 +22,11 @@ class VideoProcessor:
                     self.video_handler.save_keypoints(keypoint_data = kpts, file_name = video_name)
                 except:
                     raise ValueError(f"Unable to process video: {video_name}")
+                video_count+=1
         else:
-            raise ValueError(f"No unprocessed videos in {self.unprocessed_directory}.")
+            raise ValueError(f"No unprocessed videos in {self.unprocessed_directory}.") 
 
-    def detect_ball(self, frame):
-        result = self.kp_model.predict(frame, conf=0.5)
-
-        ball_position = np.arange(2)[[i[5] == 32 for i in result[0].boxes.data.tolist()]][0]
-
-        x_min, y_min, x_max, y_max, confidence, class_id = result[0].boxes.data.tolist()[
-            ball_position
-        ]
-        center_x = int((x_min + x_max) / 2)
-        center_y = int((y_min + y_max) / 2)
-
-        return np.array([center_x, center_y, confidence])        
+        print(f"Video Processing Complete. {video_count} video(s) processed.")    
 
     def process_video(self, video_path):
         # Open Video
@@ -68,6 +58,7 @@ class VideoProcessor:
 
                 ######## Basketball Detection #########
                 bask_loc = self.detect_ball(frame)
+                print(bask_loc)
 
                 # Merge keypoints
                 kp = self.merge_keypoints(body_loc, bask_loc)
@@ -81,13 +72,26 @@ class VideoProcessor:
         
         return stabilized_kpts
     
-    def merge_keypoints(body_loc, bask_loc):
+    def detect_ball(self, frame):
+        result = self.kp_model.predict(frame, conf=0.5)
+
+        ball_position = np.arange(2)[[i[5] == 32 for i in result[0].boxes.data.tolist()]][0]
+
+        x_min, y_min, x_max, y_max, confidence, class_id = result[0].boxes.data.tolist()[
+            ball_position
+        ]
+        center_x = int((x_min + x_max) / 2)
+        center_y = int((y_min + y_max) / 2)
+
+        return np.array([[center_x, center_y, confidence]])   
+    
+    def merge_keypoints(self, body_loc, bask_loc):
         """ This function merges the OpenPose Body Keypoints with the Basketball Location into one array"""
         # print(type(body_loc))
         # print(type(bask_loc))
         return np.concatenate((body_loc, bask_loc), axis=0)
     
-    def head_stabilization(kp, target_head_location=(500, 350)): 
+    def head_stabilization(self, kp, target_head_location=(500, 350)): 
         """ This function centers the starting location of the head in this same frame location for every video"""
 
         head_x, head_y, _ = kp[0][0]  # REPLACE WITH HEAD KP FROM FIRST FRAME
@@ -110,4 +114,8 @@ class VideoProcessor:
             stabilized_keypoints.append(frame_stabilized)
 
         return stabilized_keypoints
+    
+if __name__ == "__main__":
+    vp = VideoProcessor()
+    vp.execute()
             

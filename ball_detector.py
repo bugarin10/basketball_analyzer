@@ -1,5 +1,6 @@
 from ultralytics import YOLO
 import numpy as np
+import cv2
 
 
 def detect_ball(frame):
@@ -16,3 +17,17 @@ def detect_ball(frame):
     center_y = int((y_min + y_max) / 2)
 
     return np.array([center_x, center_y, confidence])
+
+if __name__ == "__main__":
+    video_path = 'data/01_videos/unprocessed/SA-Make-1.mov'
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        print("Error: Cannot open video.")
+
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+        ball_loc = detect_ball(frame)
+        print(ball_loc)
+        break
