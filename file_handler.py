@@ -27,7 +27,7 @@ class FileHandler:
         pass
 
 if __name__ == "__main__":
-    handler = VideoHandler()
+    handler = FileHandler()
     vids = handler.get_unprocessed_video_paths()
     for vid in vids:
         handler.move_video(vid)
