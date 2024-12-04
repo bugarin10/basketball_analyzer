@@ -1,5 +1,6 @@
 import os
 import shutil
+import numpy as np
 
 class FileHandler:
     def __init__(self):
@@ -23,8 +24,15 @@ class FileHandler:
         shutil.move(prev_path, new_path)
         print(f"Moved {video_name} to {self.processed_directory}")
     
-    def save_keypoints(self, keypoint_data):
-        pass
+    def save_keypoints(self, keypoint_data:np.array, file_name:str):
+        # Define the file path for saving the matrix
+        file_path = os.path.join(self.keypoints_directory, f"{file_name}.npy")
+        if not os.path.isfile(file_path):
+            np.save(file_path, keypoint_data)
+            print(f"{file_name}.npy saved.")
+        else:
+            print(f"{file_name}.npy already exists in data/02_keypoints directory")
+
 
 if __name__ == "__main__":
     handler = FileHandler()
