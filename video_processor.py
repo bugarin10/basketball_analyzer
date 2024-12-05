@@ -2,7 +2,7 @@ from ultralytics import YOLO
 import numpy as np
 import cv2
 import os
-from pose_estimation import pose_calc
+from mediapipe_function import pose_estimation
 from file_handler import FileHandler
 
 
@@ -54,7 +54,7 @@ class VideoProcessor:
             if frame_count % freq == 0:
 
                 ######## Pose Estimation #########
-                body_loc = pose_calc(frame)
+                body_loc = pose_estimation(frame)
 
                 ######## Basketball Detection #########
                 bask_loc = self.detect_ball(frame)
