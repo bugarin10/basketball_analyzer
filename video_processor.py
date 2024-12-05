@@ -92,20 +92,7 @@ class VideoProcessor:
         
         stabilized_kpts = self.head_stabilization(keypoints)
         
-        return stabilized_kpts
-    
-    # def detect_ball(self, frame):
-    #     result = self.kp_model.predict(frame, conf=0.5)
-
-    #     ball_position = np.arange(2)[[i[5] == 32 for i in result[0].boxes.data.tolist()]][0]
-
-    #     x_min, y_min, x_max, y_max, confidence, class_id = result[0].boxes.data.tolist()[
-    #         ball_position
-    #     ]
-    #     center_x = int((x_min + x_max) / 2)
-    #     center_y = int((y_min + y_max) / 2)
-
-    #     return np.array([[center_x, center_y, confidence]])   
+        return stabilized_kpts 
     
     def merge_keypoints(self, body_loc, bask_loc):
         """ This function merges the OpenPose Body Keypoints with the Basketball Location into one array"""
