@@ -105,7 +105,13 @@ class VideoProcessor:
         return np.concatenate((body_loc, bask_loc), axis=0)
     
     def head_stabilization(self, kp, target_head_location=(500, 350)): 
-        """ This function centers the starting location of the head in this same frame location for every video"""
+        """ This function centers the starting location of the head in this same frame location for every video
+        
+        ***** MAY BE OBSOLETE *****
+        
+        Mediapipe pose estimator has coordinate system relative to body hips "world-coordinates". 
+        Need method for converting ball location to world-coordinate system.
+        """
 
         head_x, head_y, _ = kp[0][0]  # REPLACE WITH HEAD KP FROM FIRST FRAME
         dx = target_head_location[0] - head_x
