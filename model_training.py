@@ -16,6 +16,7 @@ class HyperParameters:
         self.learning_rate = 0.001
         self.n_epochs = 30
         self.bidirectional = False
+        self.dropout = 0.1
 
 
 def create_dataset():
