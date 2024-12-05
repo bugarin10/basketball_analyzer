@@ -50,6 +50,9 @@ class VideoProcessor:
 
     def process_video(self, video_path):
         # Open Video
+
+        f_total = self.ball_detector.last_basketball_detection(video_path)
+
         cap = cv2.VideoCapture(video_path)
         if not cap.isOpened():
             print("Error: Cannot open video.")
