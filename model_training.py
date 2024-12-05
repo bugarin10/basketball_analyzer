@@ -7,8 +7,18 @@ import os
 from sklearn.model_selection import train_test_split
 
 
+class HyperParameters:
+    def __init__(self):
+        self.train_batch_size = 4
+        self.valid_batch_size = 4
+        self.lstm_layers = 1
+        self.hidden_layer = 200
+        self.learning_rate = 0.001
+        self.n_epochs = 30
+        self.bidirectional = False
+
+
 def create_dataset():
-    X, y = []
     path = os.path.join(
         os.path.dirname(os.path.abspath(__file__)), "data", "02_keypoiunts"
     )
@@ -37,20 +47,18 @@ def create_dataset():
 x_train, y_train, x_valid, y_valid, x_test, y_test = create_dataset()
 
 # Hyperparmeters
-train_batch_size = 4
-valid_batch_size = 4
-lstm_layers = 1
-hidden_layer = 200
-learning_rate = 0.001
-n_epochs = 30
-bidirectional = False
+params = HyperParameters()
 
 # Model Training Tools
 optimizer = optim.Adam()  # ADD MODEL PARAMETERS HERE
 criterion = nn.CrossEntropyLoss()
 train_loader = data.DataLoader(
-    data.TensorDataset(x_train, y_train), shuffle=True, batch_size=train_batch_size
+    data.TensorDataset(x_train, y_train),
+    shuffle=True,
+    batch_size=params.train_batch_size,
 )
 validation_loader = data.DataLoader(
-    data.TensorDataset(x_valid, y_valid), shuffle=False, batch_size=valid_batch_size
+    data.TensorDataset(x_valid, y_valid),
+    shuffle=False,
+    batch_size=params.valid_batch_size,
 )
