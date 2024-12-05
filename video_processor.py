@@ -49,17 +49,15 @@ class VideoProcessor:
         print(f"Video Processing Complete. {video_count} video(s) processed.")    
 
     def process_video(self, video_path):
+        
         # Open Video
-
-        f_total = self.ball_detector.last_basketball_detection(video_path)
-
         cap = cv2.VideoCapture(video_path)
         if not cap.isOpened():
             print("Error: Cannot open video.")
             return None
         
         # Calculate frame sampling frequency
-        f_total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        f_total = self.ball_detector.last_basketball_detection(video_path)
         freq = max(1, f_total // 10)
         print(f"TOTAL FRAMES {f_total}")
         print(f"FREQUENCY {freq}")
@@ -76,10 +74,11 @@ class VideoProcessor:
                 break
 
             # Sample frames
-            if (frame_count % freq == 0) & (frame_count < 20):
+            if (frame_count % freq == 0) & (frame_count <= f_total):
                 print(f"FRAME NUMBER {frame_count}")
                 ######## Pose Estimation #########
                 body_loc = self.pose_estimator.pose_estimation(frame)
+                print(body_loc)
 
                 ######## Basketball Detection #########
                 bask_loc = self.ball_detector.detect_ball(frame)
@@ -93,9 +92,11 @@ class VideoProcessor:
 
             frame_count += 1
         
-        stabilized_kpts = self.head_stabilization(keypoints)
+        #stabilized_kpts = self.head_stabilization(keypoints)
         
-        return stabilized_kpts 
+        #return stabilized_kpts 
+        print(keypoints)
+        return keypoints
     
     def merge_keypoints(self, body_loc, bask_loc):
         """ This function merges the OpenPose Body Keypoints with the Basketball Location into one array"""
