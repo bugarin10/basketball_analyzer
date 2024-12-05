@@ -131,6 +131,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+basketball_form_analyzer/
+
 
 # Spyder project settings
 .spyderproject
