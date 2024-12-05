@@ -9,9 +9,9 @@ sudo apt update: This command updates the package lists for packages that need u
 
 sudo apt install -y libgl1: This command installs the libgl1 package, which is a library for OpenGL. The -y flag automatically answers "yes" to any prompts, allowing the installation to proceed without user intervention.
 
-´´´bash
+```bash
 pip install -r requirements.txt
 sudo apt update
 sudo apt install -y libgl1
-´´´
+```
 
