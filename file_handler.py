@@ -8,7 +8,7 @@ class FileHandler:
         self.root_directory = os.path.dirname(os.path.abspath(__file__))
         self.unprocessed_directory = os.path.join(self.root_directory, 'data', '01_videos', 'unprocessed')
         self.processed_directory = os.path.join(self.root_directory, 'data', '01_videos', 'processed')
-        self.keypoints_directory = os.path.join(self.root_directory, 'data', '02_keypoiunts')
+        self.keypoints_directory = os.path.join(self.root_directory, 'data', '02_keypoints')
 
     def get_unprocessed_video_paths(self):
         files = os.listdir(self.unprocessed_directory)
@@ -26,10 +26,13 @@ class FileHandler:
     
     def save_keypoints(self, keypoint_data:np.array, file_name:str):
         # Define the file path for saving the matrix
-        file_path = os.path.join(self.keypoints_directory, f"{file_name}.npy")
+        file_path = os.path.join(self.keypoints_directory, f"{file_name[:-4]}.npy")
         if not os.path.isfile(file_path):
-            np.save(file_path, keypoint_data)
-            print(f"{file_name}.npy saved.")
+            try:
+                np.save(file_path, keypoint_data)
+                print(f"{file_name}.npy saved.")
+            except Exception as e:
+                raise ValueError(f"Error saving file {file_name}, Error: {e}")
         else:
             print(f"{file_name}.npy already exists in data/02_keypoints directory")
 

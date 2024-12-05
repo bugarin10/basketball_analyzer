@@ -2,27 +2,47 @@ from ultralytics import YOLO
 import numpy as np
 import cv2
 import os
-from mediapipe_function import pose_estimation
+from mediapipe_function import PoseEstimator
 from file_handler import FileHandler
+from ball_detector import BallDetector
 
 
 class VideoProcessor:
     def __init__(self):
         self.kp_model = YOLO("yolov8m.pt") # Set up basketball detection model
-        self.video_handler = FileHandler() # Set up video handler (moving videos, video paths, etc)
-        self.videos, self.unprocessed_directory = self.video_handler.get_unprocessed_video_paths() # List of videos in "data/unprocessed" folder
-    
+        self.file_handler = FileHandler() # Set up video handler (moving videos, video paths, etc)
+        self.ball_detector = BallDetector() # Ball Detection Object w/ Yolo Model
+        self.pose_estimator = PoseEstimator()
+        self.videos, self.unprocessed_directory = self.file_handler.get_unprocessed_video_paths() # List of videos in "data/unprocessed" folder
+        self._current_step = None
+
+    def _identify_error_step(self):
+        """Helper method to provide the current step for debugging."""
+        if not hasattr(self, '_current_step'):
+            return "Unknown"
+        return self._current_step
+
     def execute(self):
         if self.videos:
             video_count = 0
             for video_name in self.videos:
                 try:
+                    self._current_step = "Constructing video path"
                     video_path = os.path.join(self.unprocessed_directory, video_name)
+
+                    self._current_step = "Processing video"
                     kpts = self.process_video(video_path=video_path)
-                    self.video_handler.save_keypoints(keypoint_data = kpts, file_name = video_name)
-                except:
-                    raise ValueError(f"Unable to process video: {video_name}")
-                video_count+=1
+
+                    self._current_step = "Saving keypoints"
+                    self.file_handler.save_keypoints(keypoint_data=kpts, file_name=video_name)
+
+                    self._current_step = "Transferring video"
+                    self.file_handler.move_video(video_name=video_name)
+
+                    video_count+=1
+                    
+                except Exception as e:
+                    raise ValueError(f"An error occurred while processing video: {video_name}. Step: {self._identify_error_step()}, Error: {e}")
         else:
             raise ValueError(f"No unprocessed videos in {self.unprocessed_directory}.") 
 
@@ -38,6 +58,8 @@ class VideoProcessor:
         # Calculate frame sampling frequency
         f_total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         freq = max(1, f_total // 10)
+        print(f"TOTAL FRAMES {f_total}")
+        print(f"FREQUENCY {freq}")
 
         # Initialize counting parameters
         frame_count = 0
@@ -51,13 +73,13 @@ class VideoProcessor:
                 break
 
             # Sample frames
-            if frame_count % freq == 0:
-
+            if (frame_count % freq == 0) & (frame_count < 20):
+                print(f"FRAME NUMBER {frame_count}")
                 ######## Pose Estimation #########
-                body_loc = pose_estimation(frame)
+                body_loc = self.pose_estimator.pose_estimation(frame)
 
                 ######## Basketball Detection #########
-                bask_loc = self.detect_ball(frame)
+                bask_loc = self.ball_detector.detect_ball(frame)
                 print(bask_loc)
 
                 # Merge keypoints
@@ -72,18 +94,18 @@ class VideoProcessor:
         
         return stabilized_kpts
     
-    def detect_ball(self, frame):
-        result = self.kp_model.predict(frame, conf=0.5)
+    # def detect_ball(self, frame):
+    #     result = self.kp_model.predict(frame, conf=0.5)
 
-        ball_position = np.arange(2)[[i[5] == 32 for i in result[0].boxes.data.tolist()]][0]
+    #     ball_position = np.arange(2)[[i[5] == 32 for i in result[0].boxes.data.tolist()]][0]
 
-        x_min, y_min, x_max, y_max, confidence, class_id = result[0].boxes.data.tolist()[
-            ball_position
-        ]
-        center_x = int((x_min + x_max) / 2)
-        center_y = int((y_min + y_max) / 2)
+    #     x_min, y_min, x_max, y_max, confidence, class_id = result[0].boxes.data.tolist()[
+    #         ball_position
+    #     ]
+    #     center_x = int((x_min + x_max) / 2)
+    #     center_y = int((y_min + y_max) / 2)
 
-        return np.array([[center_x, center_y, confidence]])   
+    #     return np.array([[center_x, center_y, confidence]])   
     
     def merge_keypoints(self, body_loc, bask_loc):
         """ This function merges the OpenPose Body Keypoints with the Basketball Location into one array"""
