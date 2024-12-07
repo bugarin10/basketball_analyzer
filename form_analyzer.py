@@ -19,7 +19,11 @@ class BallAnalyzer(nn.Module):
             dropout=dropout_rate,
             bidirectional=bidirectional,
         )
-        self.linear = nn.Linear(hidden_dim, output_dim)
+        if bidirectional:
+            new_linear_input = hidden_dim * 2
+        else:
+            new_linear_input = hidden_dim
+        self.linear = nn.Linear(new_linear_input, output_dim)
         pass
 
     def forward(self, x):
