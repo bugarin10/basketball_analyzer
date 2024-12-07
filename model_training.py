@@ -15,6 +15,7 @@ class HyperParameters:
         self.lstm_layers = 1
         self.input_size = 34 * 3  # Keypoints = 34 and Features per = 3
         self.hidden_layer = 200
+        self.output = 2
         self.learning_rate = 0.001
         self.n_epochs = 5
         self.bidirectional = False
@@ -69,7 +70,7 @@ def train_model(
         v_total = 0
 
         for batch_idx, (inputs, targets) in enumerate(train_loader):
-            inputs, targets = inputs.to(device)
+            inputs, targets = inputs.to(device), targets.to(device)
 
             y_pred = model(inputs)
             loss = criterion(y_pred, targets)
@@ -88,13 +89,14 @@ def train_model(
         model.eval()
         with torch.no_grad():
             for batch_idx, (inputs, targets) in enumerate(valid_loader):
+                inputs, targets = inputs.to(device), targets.to(device)
                 y_pred = model(inputs)
                 valid_loss += criterion(y_pred, targets).item()
                 _, predicted = torch.max(y_pred, 1)
                 v_total += targets.size(0)
                 v_correct += (predicted == targets).sum().item()
 
-        validation_accuracy(v_correct / v_total)
+        validation_accuracy.append(v_correct / v_total)
         validation_loss.append(valid_loss / len(valid_loader))
 
         print(f"========== Epoch {epoch} ==========")
@@ -126,7 +128,7 @@ def test_model(model, test_loader, criterion, n_epochs, device):
 
         with torch.no_grad():
             for batch_idx, (inputs, targets) in enumerate(test_loader):
-                inputs, targets = inputs.to(device)
+                inputs, targets = inputs.to(device), targets.to(device)
 
                 y_pred = model(inputs)
                 test_loss += criterion(y_pred, targets).item()
@@ -151,7 +153,14 @@ x_train, y_train, x_valid, y_valid, x_test, y_test = create_dataset()
 params = HyperParameters()
 
 # The Model
-model = BallAnalyzer()
+model = BallAnalyzer(
+    params.input_size,
+    params.hidden_layer,
+    params.output,
+    params.lstm_layers,
+    params.dropout,
+    params.bidirectional,
+)
 
 # Model Training Tools
 optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
@@ -169,12 +178,3 @@ validation_loader = data.DataLoader(
 test_loader = data.DataLoader(
     data.TensorDataset(x_test, y_test), shuffle=True, batch_size=params.valid_batch_size
 )
-
-
-device = "cuda" if torch.cuda.is_available() else "cpu"
-if device == "cuda":
-    print("Run on GPU...")
-else:
-    print("Run on CPU...")
-
-model.to(device)

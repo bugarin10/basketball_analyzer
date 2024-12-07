@@ -20,14 +20,13 @@ class BallAnalyzer(nn.Module):
             bidirectional=bidirectional,
         )
         if bidirectional:
-            new_linear_input = hidden_dim * 2
+            new_linear_input = hidden_dim * 2 * n_layers
         else:
-            new_linear_input = hidden_dim
+            new_linear_input = hidden_dim * n_layers
         self.linear = nn.Linear(new_linear_input, output_dim)
-        pass
 
     def forward(self, x):
         out, _ = self.lstm(x)
         out = out[:, -1, :]
-        out = self.fc(out)
+        out = self.linear(out)
         return out
