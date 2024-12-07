@@ -114,7 +114,7 @@ def train_model(
     )
 
 
-def train_model(model, test_loader, criterion, optimizer, n_epochs, device):
+def test_model(model, test_loader, criterion, n_epochs, device):
     test_loss = 0
     test_accuracy = 0
 
