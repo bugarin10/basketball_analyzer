@@ -57,7 +57,7 @@ class VideoProcessor:
             return None
         
         # Calculate frame sampling frequency
-        desired_frames = 100
+        desired_frames = 20
         f_total = self.ball_detector.last_basketball_detection(video_path)
         frame_indices = set(np.linspace(0, f_total - 1, num=desired_frames, dtype=int))
         if len(frame_indices) < desired_frames:
