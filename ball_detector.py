@@ -7,6 +7,7 @@ class BallDetector():
     def __init__(self):
 
         self.model = YOLO("yolov8m.pt")
+        self.frame_shape = None
 
     def detect_ball(self, frame):
 
@@ -25,7 +26,9 @@ class BallDetector():
         center_x = int((x_min + x_max) / 2)
         center_y = int((y_min + y_max) / 2)
 
-        return np.array([[center_x, center_y, confidence]]) 
+        loc = np.array([[center_x, center_y, confidence]])
+
+        return self.normalize_coordinates(loc)
       
     def plot_ball_on_frame(self, frame, ball_data):
         """
@@ -70,10 +73,10 @@ class BallDetector():
         if not cap.isOpened():
             print("Error: Cannot open video.")
             exit()
+
         left = 0
         right = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) # total frames
         last_detected_frame = -1
-
 
         while left < right:
             mid = (left + right) // 2
@@ -82,6 +85,9 @@ class BallDetector():
             if not ret:
                 print(f"Error: Could not read frame {mid}. Stopping search.")
                 break
+            if last_detected_frame == -1:
+                self.frame_shape = frame.shape[:2]
+
             ball_loc = self.detect_ball(frame)
             if ball_loc is not None:
                 left = mid
@@ -93,7 +99,13 @@ class BallDetector():
 
         return last_detected_frame
         
-
+    def normalize_coordinates(self, loc):
+        """Normalize location of basketball in the video"""
+        x_loc, y_loc, conf = loc[0]
+        h, w = self.frame_shape
+        x_norm = x_loc / w
+        y_norm = y_loc / h
+        return np.array([[x_norm, y_norm, conf]])
 
 if __name__ == "__main__":
     video_path = 'data/01_videos/unprocessed/SA-Make-1.mov'

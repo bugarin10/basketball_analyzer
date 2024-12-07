@@ -89,9 +89,9 @@ class VideoProcessor:
                 keypoints.append(kp)
 
                 processed_count += 1
-
+            
             frame_count += 1
-        
+
         #stabilized_kpts = self.head_stabilization(keypoints)
         
         #return stabilized_kpts 

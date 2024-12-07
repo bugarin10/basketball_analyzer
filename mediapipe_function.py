@@ -52,9 +52,9 @@ class PoseEstimator():
         # STEP 4: Detect pose landmarks from the input image.
         detection_result = self.detector.detect(image)
 
-        print(detection_result)
+        #print(detection_result)
 
-        return self.extract_landmarks(detection_result.pose_world_landmarks[0], visibility=True)
+        return self.extract_landmarks(detection_result.pose_landmarks[0], visibility=True)
 
 
 if __name__=="__main__":
