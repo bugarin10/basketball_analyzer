@@ -4,14 +4,15 @@ import cv2
 
 
 class BallDetector():
-    def __init__(self):
+    def __init__(self, frame_shape = None):
 
         self.model = YOLO("yolov8m.pt")
-        self.frame_shape = None
+        self.frame_shape = frame_shape
+        self.conf_thresh = 0.15
 
     def detect_ball(self, frame):
 
-        result = self.model.predict(frame, conf=0.05)
+        result = self.model.predict(frame, conf=self.conf_thresh)
 
         detections = [i[5] == 32 for i in result[0].boxes.data.tolist()]
 
@@ -44,6 +45,12 @@ class BallDetector():
         
         # Extract ball data
         center_x, center_y, confidence = ball_data[0]
+        # Get frame dimensions
+        frame_height, frame_width = self.frame_shape
+
+        # Denormalize basketball coordinates for the first frame
+        center_x = int(center_x * frame_width)
+        center_y = int(center_y * frame_height)
         center = (int(center_x), int(center_y))
         center_text = (int(center_x + 15), int(center_y - 10))
 
@@ -66,7 +73,7 @@ class BallDetector():
         cv2.waitKey(0)
         cv2.destroyAllWindows()
     
-    def last_basketball_detection(self, video_path):
+    def last_basketball_detection_binary(self, video_path):
         "Binary search for last frame with detected basketball"
 
         cap = cv2.VideoCapture(video_path)
@@ -77,9 +84,11 @@ class BallDetector():
         left = 0
         right = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) # total frames
         last_detected_frame = -1
-
-        while left < right:
-            mid = (left + right) // 2
+        count = 0
+        while (left < right)&(count<20):
+            print(last_detected_frame)
+            mid = ((left + right + 1) // 2)
+            print(left, right, mid)
             cap.set(cv2.CAP_PROP_POS_FRAMES, mid)
             ret, frame = cap.read()
             if not ret:
@@ -94,10 +103,43 @@ class BallDetector():
                 last_detected_frame = mid
             else:
                 right =  mid - 1
+            
+            count += 1
+
+        cap.release()
+
+        if count == 20:
+            print("LAST BASKETBALL FRAME DID NOT CONVERGE")
+            return None
         
         cap.release()
 
         return last_detected_frame
+    
+    def last_basketball_detection(self, video_path):
+        cap = cv2.VideoCapture(video_path)
+        if not cap.isOpened():
+            print("Error: Cannot open video.")
+            exit()
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        i = 0
+        while i < total_frames:
+            cap.set(cv2.CAP_PROP_POS_FRAMES, i)
+            ret, frame = cap.read()
+            if not ret:
+                print(f"Error: Could not read frame {i}. Stopping search.")
+                break
+            if i == 0:
+                self.frame_shape = frame.shape[:2]
+            ball_loc = self.detect_ball(frame)
+            if ball_loc is not None:
+                i += 1
+                continue
+            else:
+                break
+        cap.release()
+        return i-1
+
         
     def normalize_coordinates(self, loc):
         """Normalize location of basketball in the video"""
@@ -111,6 +153,9 @@ if __name__ == "__main__":
     video_path = 'data/01_videos/unprocessed/SA-Make-1.mov'
     ball_detector = BallDetector()
     specific_frame_number = ball_detector.last_basketball_detection(video_path=video_path)
+    #specific_frame_number = 70
+    if specific_frame_number is None:
+        exit
 
     # Open the video
     cap = cv2.VideoCapture(video_path)
@@ -127,7 +172,8 @@ if __name__ == "__main__":
         print(f"Error: Could not read frame {specific_frame_number}.")
     else:
         # Process the specific frame
-        ball_detector = BallDetector()
+        frame_shape = frame.shape[:2]
+        ball_detector = BallDetector(frame_shape=frame_shape)
         ball_loc = ball_detector.detect_ball(frame)
         if ball_loc is None:
             exit

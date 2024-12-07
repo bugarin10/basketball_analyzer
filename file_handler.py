@@ -10,6 +10,11 @@ class FileHandler:
         self.processed_directory = os.path.join(self.root_directory, 'data', '01_videos', 'processed')
         self.errored_directory = os.path.join(self.root_directory, 'data', '01_videos', 'errored')
         self.keypoints_directory = os.path.join(self.root_directory, 'data', '02_keypoints')
+        self.origin_directory = os.path.join(self.root_directory, 'data', '00_origin_data')
+
+    def get_origin(self):
+        origin_array = os.path.join(self.origin_directory, 'origin.npy')
+        return np.load(origin_array)
 
     def get_unprocessed_video_paths(self):
         files = os.listdir(self.unprocessed_directory)
@@ -51,7 +56,6 @@ class FileHandler:
 
 if __name__ == "__main__":
     handler = FileHandler()
-    vids = handler.get_unprocessed_video_paths()
-    for vid in vids:
-        handler.move_video(vid)
+    origin = handler.get_origin()
+    print(origin)
     

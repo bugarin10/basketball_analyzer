@@ -25,5 +25,4 @@ if __name__ == "__main__":
     root_directory = os.path.dirname(os.path.abspath(__file__))
     data_kp_path = os.path.join(root_directory, 'SA-Make-1.npy')
     origin_kp_path = os.path.join(root_directory, 'origin.npy')
-
     find_origin(data_kp_path, origin_kp_path)
