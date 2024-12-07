@@ -62,6 +62,7 @@ def train_model(
         epochs.append(epoch)
         model.train()
         train_loss = 0
+        valid_loss = 0
         t_correct = 0
         t_total = 0
         v_correct = 0
@@ -86,10 +87,9 @@ def train_model(
 
         model.eval()
         with torch.no_grad():
-            valid_loss = 0
             for batch_idx, (inputs, targets) in enumerate(valid_loader):
                 y_pred = model(inputs)
-                valid_loss += criterion(y_pred, targets)
+                valid_loss += criterion(y_pred, targets).item()
                 _, predicted = torch.max(y_pred, 1)
                 v_total += targets.size(0)
                 v_correct += (predicted == targets).sum().item()
@@ -112,6 +112,32 @@ def train_model(
         validation_loss,
         epochs,
     )
+
+
+def train_model(model, test_loader, criterion, optimizer, n_epochs, device):
+    test_loss = 0
+    test_accuracy = 0
+
+    for epoch in range(n_epochs):
+        model.eval()
+        test_loss = 0
+        t_correct = 0
+        t_total = 0
+
+        with torch.no_grad():
+            for batch_idx, (inputs, targets) in enumerate(test_loader):
+                inputs, targets = inputs.to(device)
+
+                y_pred = model(inputs)
+                test_loss += criterion(y_pred, targets).item()
+
+                _, predicted = torch.max(y_pred, 1)
+                t_total += targets.size(0)
+                t_correct += (predicted == targets).sum().item()
+
+        test_loss = test_loss / len(test_loader)
+        test_accuracy = t_correct / t_total
+        return test_loss, test_accuracy
 
 
 # Set Random Parameters
