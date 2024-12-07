@@ -34,10 +34,10 @@ class VideoProcessor:
                     kpts = self.process_video(video_path=video_path)
 
                     self._current_step = "Saving keypoints"
-                    self.file_handler.save_keypoints(keypoint_data=kpts, file_name=video_name)
+                    success = self.file_handler.save_keypoints(keypoint_data=kpts, file_name=video_name)
 
                     self._current_step = "Transferring video"
-                    self.file_handler.move_video(video_name=video_name)
+                    _ = self.file_handler.move_video(success, video_name=video_name)
 
                     video_count+=1
                     
@@ -49,6 +49,7 @@ class VideoProcessor:
         print(f"Video Processing Complete. {video_count} video(s) processed.")    
 
     def process_video(self, video_path):
+        
         # Open Video
         cap = cv2.VideoCapture(video_path)
         if not cap.isOpened():
@@ -56,10 +57,15 @@ class VideoProcessor:
             return None
         
         # Calculate frame sampling frequency
-        f_total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        freq = max(1, f_total // 10)
+        desired_frames = 100
+        f_total = self.ball_detector.last_basketball_detection(video_path)
+        frame_indices = set(np.linspace(0, f_total - 1, num=desired_frames, dtype=int))
+        if len(frame_indices) < desired_frames:
+            print(f"LOW FRAMES DETECTED. VIDEO {video_path}")
+            return None
+        
         print(f"TOTAL FRAMES {f_total}")
-        print(f"FREQUENCY {freq}")
+        print(f"TRIMMED FRAME NUMBER TO: {desired_frames}")
 
         # Initialize counting parameters
         frame_count = 0
@@ -73,10 +79,11 @@ class VideoProcessor:
                 break
 
             # Sample frames
-            if (frame_count % freq == 0) & (frame_count < 20):
+            if frame_count in frame_indices:
                 print(f"FRAME NUMBER {frame_count}")
                 ######## Pose Estimation #########
                 body_loc = self.pose_estimator.pose_estimation(frame)
+                print(body_loc)
 
                 ######## Basketball Detection #########
                 bask_loc = self.ball_detector.detect_ball(frame)
@@ -87,12 +94,14 @@ class VideoProcessor:
                 keypoints.append(kp)
 
                 processed_count += 1
-
+            
             frame_count += 1
+
+        #stabilized_kpts = self.head_stabilization(keypoints)
         
-        stabilized_kpts = self.head_stabilization(keypoints)
-        
-        return stabilized_kpts 
+        #return stabilized_kpts 
+        print(keypoints)
+        return keypoints
     
     def merge_keypoints(self, body_loc, bask_loc):
         """ This function merges the OpenPose Body Keypoints with the Basketball Location into one array"""
@@ -100,10 +109,16 @@ class VideoProcessor:
         # print(type(bask_loc))
         return np.concatenate((body_loc, bask_loc), axis=0)
     
-    def head_stabilization(self, kp, target_head_location=(500, 350)): 
-        """ This function centers the starting location of the head in this same frame location for every video"""
+    def head_stabilization(self, kp, target_hip_location=(500, 350)): 
+        """ This function centers the starting location of the head in this same frame location for every video
+        
+        ***** MAY BE OBSOLETE *****
+        
+        Mediapipe pose estimator has coordinate system relative to body hips "world-coordinates". 
+        Need method for converting ball location to world-coordinate system.
+        """
 
-        head_x, head_y, _ = kp[0][0]  # REPLACE WITH HEAD KP FROM FIRST FRAME
+        head_x, head_y, _ = kp[0][0]  # PREDETERMINED STARTING HIP LOCATION FOR EVERY VIDEO
         dx = target_head_location[0] - head_x
         dy = target_head_location[1] - head_y
 

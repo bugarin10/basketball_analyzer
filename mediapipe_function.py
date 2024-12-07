@@ -45,12 +45,6 @@ class PoseEstimator():
 
         """
 
-        # base_options = python.BaseOptions(model_asset_path='pose_landmarker.task')
-        # options = vision.PoseLandmarkerOptions(
-        #     base_options=base_options,
-        #     output_segmentation_masks=True)
-        # detector = vision.PoseLandmarker.create_from_options(options)
-
         # STEP 3: Load the input image.
         #image = mp.Image.create_from_file(path_to_image)
         image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame)
@@ -58,9 +52,32 @@ class PoseEstimator():
         # STEP 4: Detect pose landmarks from the input image.
         detection_result = self.detector.detect(image)
 
-        return self.extract_landmarks(detection_result.pose_world_landmarks[0], visibility=True)
+        #print(detection_result)
+
+        return self.extract_landmarks(detection_result.pose_landmarks[0], visibility=True)
 
 
 if __name__=="__main__":
+
+    import cv2
+
+    video_path = 'data/01_videos/unprocessed/SA-Make-1.mov'
     pe = PoseEstimator()
-    print(f'keypoints for default image.jpg:\n{pe.pose_estimation()}')
+    specific_frame_number = 0
+
+    # Open the video
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        print("Error: Cannot open video.")
+        exit()
+
+    # Set the frame position to the desired frame
+    cap.set(cv2.CAP_PROP_POS_FRAMES, specific_frame_number)
+
+    # Read the specific frame
+    ret, frame = cap.read()
+    if not ret:
+        print(f"Error: Could not read frame {specific_frame_number}.")
+    else:
+        # Process the specific frame
+        print(f'keypoints for example frame:\n{pe.pose_estimation(frame=frame)}')
