@@ -19,7 +19,7 @@ class FileHandler:
 
     def get_unprocessed_video_paths(self):
         files = os.listdir(self.unprocessed_directory)
-        vids = [file for file in files if file.endswith('.mov')]
+        vids = [file for file in files if file.lower().endswith('.mov')]
         #vids = [os.path.join(self.unprocessed_directory, vid) for vid in vids]
         if len(vids) > 0:
             return vids, self.unprocessed_directory

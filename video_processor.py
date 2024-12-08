@@ -57,9 +57,9 @@ class VideoProcessor:
             return None
         
         # Calculate frame sampling frequency
-        desired_frames = 20
-        # f_total = self.ball_detector.last_basketball_detection(video_path) ###BASKETBALL
-        f_total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        desired_frames = 30
+        #f_total = self.ball_detector.last_basketball_detection(video_path) ###BASKETBALL
+        f_total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) ### NO BASKETBALL
         if f_total is None:
             return None
         frame_indices = set(np.linspace(0, f_total - 1, num=desired_frames, dtype=int))
@@ -95,7 +95,7 @@ class VideoProcessor:
                 # Merge keypoints
                 #kp = self.merge_keypoints(body_loc, bask_loc) ###BASKETBALL
                 #keypoints.append(kp) ###BASKETBALL
-                keypoints.append(body_loc)
+                keypoints.append(body_loc) ### No BASKETBALL
 
 
                 processed_count += 1
