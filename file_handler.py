@@ -6,10 +6,11 @@ class FileHandler:
     def __init__(self):
         # Set up the unprocessed and processed directories relative to the repository
         self.root_directory = os.path.dirname(os.path.abspath(__file__))
-        self.unprocessed_directory = os.path.join(self.root_directory, 'data', '01_videos', 'unprocessed')
-        self.processed_directory = os.path.join(self.root_directory, 'data', '01_videos', 'processed')
-        self.errored_directory = os.path.join(self.root_directory, 'data', '01_videos', 'errored')
-        self.keypoints_directory = os.path.join(self.root_directory, 'data', '02_keypoints')
+        self.parent_directory = os.path.dirname(self.root_directory) #Used to access data directories outside of repository
+        self.unprocessed_directory = os.path.join(self.parent_directory, 'data', '01_videos', 'unprocessed')
+        self.processed_directory = os.path.join(self.parent_directory, 'data', '01_videos', 'processed')
+        self.errored_directory = os.path.join(self.parent_directory, 'data', '01_videos', 'errored')
+        self.keypoints_directory = os.path.join(self.parent_directory, 'data', '02_keypoints')
         self.origin_directory = os.path.join(self.root_directory, 'data', '00_origin_data')
 
     def get_origin(self):
@@ -55,7 +56,11 @@ class FileHandler:
 
 
 if __name__ == "__main__":
-    handler = FileHandler()
-    origin = handler.get_origin()
-    print(origin)
+    # handler = FileHandler()
+    # origin = handler.get_origin()
+    # print(origin)
+    root_directory = os.path.dirname(os.path.abspath(__file__))
+    parent_directory = os.path.dirname(root_directory)
+    unprocessed_directory = os.path.join(parent_directory, 'data', '01_videos', 'unprocessed')
+    print(unprocessed_directory)
     

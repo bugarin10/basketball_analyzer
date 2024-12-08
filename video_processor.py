@@ -2,9 +2,9 @@ from ultralytics import YOLO
 import numpy as np
 import cv2
 import os
-from mediapipe_function import PoseEstimator
-from file_handler import FileHandler
-from ball_detector import BallDetector
+from .mediapipe_function import PoseEstimator
+from .file_handler import FileHandler
+from .ball_detector import BallDetector
 
 
 class VideoProcessor:

@@ -1,6 +1,7 @@
 from ultralytics import YOLO
 import numpy as np
 import cv2
+import os
 
 
 class BallDetector():
@@ -40,6 +41,9 @@ class BallDetector():
         - ball_data: A NumPy array with the format [[center_x, center_y, confidence]].
         """
         if ball_data is None:
+            cv2.imshow('Ball Detection', frame)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
             print("No ball detected to plot.")
             return frame  # Return the frame unchanged
         
@@ -150,10 +154,14 @@ class BallDetector():
         return np.array([[x_norm, y_norm, conf]])
 
 if __name__ == "__main__":
-    video_path = 'data/01_videos/unprocessed/SA-Make-1.mov'
+    root_directory = os.path.dirname(os.path.abspath(__file__))
+    parent_directory = os.path.dirname(root_directory)
+    unprocessed_directory = os.path.join(parent_directory, 'data', '01_videos', 'unprocessed')
+    file_name = '9_make'
+    video_path = os.path.join(unprocessed_directory, f'{file_name}.mov')
     ball_detector = BallDetector()
-    specific_frame_number = ball_detector.last_basketball_detection(video_path=video_path)
-    #specific_frame_number = 70
+    #specific_frame_number = ball_detector.last_basketball_detection(video_path=video_path)
+    specific_frame_number = 70
     if specific_frame_number is None:
         exit
 

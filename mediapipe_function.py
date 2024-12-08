@@ -9,7 +9,7 @@ from mediapipe.tasks.python import vision
 
 class PoseEstimator():
     def __init__(self):
-        self.base_options = python.BaseOptions(model_asset_path='pose_landmarker.task')
+        self.base_options = python.BaseOptions(model_asset_path='basketball_analyzer/pose_landmarker.task')
         self.options = vision.PoseLandmarkerOptions(
             base_options=self.base_options, 
             output_segmentation_masks=True)
