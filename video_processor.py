@@ -85,8 +85,8 @@ class VideoProcessor:
             if frame_count in frame_indices:
                 print(f"FRAME NUMBER {frame_count}")
                 ######## Pose Estimation #########
-                body_loc = self.pose_estimator.pose_estimation(frame)
-                #print(body_loc)
+                body_loc = np.array(self.pose_estimator.pose_estimation(frame)) # .reshape(1, -1)
+                #print(body_loc.shape)
 
                 ######## Basketball Detection #########
                 #bask_loc = self.ball_detector.detect_ball(frame) ###BASKETBALL
@@ -95,7 +95,7 @@ class VideoProcessor:
                 # Merge keypoints
                 #kp = self.merge_keypoints(body_loc, bask_loc) ###BASKETBALL
                 #keypoints.append(kp) ###BASKETBALL
-
+                keypoints.append(body_loc)
 
 
                 processed_count += 1
