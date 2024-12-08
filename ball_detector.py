@@ -6,13 +6,13 @@ import cv2
 class BallDetector():
     def __init__(self, frame_shape = None):
 
-        self.model = YOLO("yolov8m.pt")
+        self.model = YOLO("yolov8x.pt")
         self.frame_shape = frame_shape
         self.conf_thresh = 0.15
 
     def detect_ball(self, frame):
 
-        result = self.model.predict(frame, conf=self.conf_thresh)
+        result = self.model.predict(frame, conf=self.conf_thresh, verbose=False)
 
         detections = [i[5] == 32 for i in result[0].boxes.data.tolist()]
 
