@@ -9,7 +9,6 @@ from ball_detector import BallDetector
 
 class VideoProcessor:
     def __init__(self):
-        self.kp_model = YOLO("yolov8m.pt") # Set up basketball detection model
         self.file_handler = FileHandler() # Set up video handler (moving videos, video paths, etc)
         self.ball_detector = BallDetector() # Ball Detection Object w/ Yolo Model
         self.pose_estimator = PoseEstimator()
@@ -59,7 +58,8 @@ class VideoProcessor:
         
         # Calculate frame sampling frequency
         desired_frames = 20
-        f_total = self.ball_detector.last_basketball_detection(video_path)
+        # f_total = self.ball_detector.last_basketball_detection(video_path) ###BASKETBALL
+        f_total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         if f_total is None:
             return None
         frame_indices = set(np.linspace(0, f_total - 1, num=desired_frames, dtype=int))
@@ -89,18 +89,21 @@ class VideoProcessor:
                 #print(body_loc)
 
                 ######## Basketball Detection #########
-                bask_loc = self.ball_detector.detect_ball(frame)
-                #print(bask_loc)
+                #bask_loc = self.ball_detector.detect_ball(frame) ###BASKETBALL
+                #print(bask_loc) 
 
                 # Merge keypoints
-                kp = self.merge_keypoints(body_loc, bask_loc)
-                keypoints.append(kp)
+                #kp = self.merge_keypoints(body_loc, bask_loc) ###BASKETBALL
+                #keypoints.append(kp) ###BASKETBALL
+
+
 
                 processed_count += 1
             
             frame_count += 1
 
-        stabilized_kpts = self.head_stabilization(keypoints)
+        kp_array = np.array(keypoints)
+        stabilized_kpts = self.head_stabilization(kp_array)
         
         return stabilized_kpts 
     
@@ -140,7 +143,6 @@ class VideoProcessor:
                 frame_stabilized[keypoint_idx] = [x + dx, y + dy, confidence]
 
             stabilized_keypoints.append(frame_stabilized)
-            break
 
         return stabilized_keypoints
     

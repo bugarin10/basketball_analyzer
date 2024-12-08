@@ -54,6 +54,8 @@ class PoseEstimator():
 
         #print(detection_result)
 
+        self.extract_landmarks(detection_result.pose_landmarks[0], visibility=True)
+
         return self.extract_landmarks(detection_result.pose_landmarks[0], visibility=True)
 
 

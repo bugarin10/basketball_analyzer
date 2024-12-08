@@ -40,7 +40,8 @@ def plot_keypoints_first_frame(frame, frame_kp, color_basketball=(0, 255, 0), co
 
 if __name__ == "__main__":
 
-    video_path = 'data/01_videos/processed/43_make.mov'
+    file_name = "9_make"
+    video_path = f'data/01_videos/processed/{file_name}.mov'
 
     # Open the video
     cap = cv2.VideoCapture(video_path)
@@ -49,16 +50,16 @@ if __name__ == "__main__":
         exit()
 
     # Set the frame position to the desired frame
-    cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+    cap.set(cv2.CAP_PROP_POS_FRAMES, 37)
 
     # Read the specific frame
     ret, frame = cap.read()
     if not ret:
-        print(f"Error: Could not read frame {0}.")
+        print(f"Error: Could not read frame {37}.")
     
 
     # Example input: Keypoints array (11 frames, 34 keypoints, 3 values per keypoint)
-    keypoints = np.load("data/02_keypoints/43_make.npy")
+    keypoints = np.load(f"data/02_keypoints/{file_name}.npy")
     frame_kp = keypoints[0] #### CHANGE BASED ON FRAME NUMBER
 
     # Plot keypoints and basketball location on the first frame
