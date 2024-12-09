@@ -16,6 +16,8 @@ class VideoProcessor:
         self._current_step = None
         self.origin = self.file_handler.get_origin()  # PREDETERMINED STARTING HIP LOCATION FOR EVERY VIDEO
 
+        self.final_frames = {} # Store the last frame with detected basketball for checking
+
     def _identify_error_step(self):
         """Helper method to provide the current step for debugging."""
         if not hasattr(self, '_current_step'):
@@ -27,11 +29,12 @@ class VideoProcessor:
             video_count = 0
             for video_name in self.videos:
                 try:
+                    print(f"\n\n PROCESSING {video_name}:::: \n")
                     self._current_step = "Constructing video path"
                     video_path = os.path.join(self.unprocessed_directory, video_name)
 
                     self._current_step = "Processing video"
-                    kpts = self.process_video(video_path=video_path)
+                    kpts = self.process_video(video_path=video_path, video_name=video_name)
 
                     self._current_step = "Saving keypoints"
                     success = self.file_handler.save_keypoints(keypoint_data=kpts, file_name=video_name)
@@ -45,10 +48,13 @@ class VideoProcessor:
                     raise ValueError(f"An error occurred while processing video: {video_name}. Step: {self._identify_error_step()}, Error: {e}")
         else:
             raise ValueError(f"No unprocessed videos in {self.unprocessed_directory}.") 
+        
+        self._current_step = "Saving Final Frame Numbers"
+        self.file_handler.save_final_frames(self.final_frames)
 
         print(f"Video Processing Complete. {video_count} video(s) processed.")    
 
-    def process_video(self, video_path):
+    def process_video(self, video_path, video_name):
         
         # Open Video
         cap = cv2.VideoCapture(video_path)
@@ -58,8 +64,9 @@ class VideoProcessor:
         
         # Calculate frame sampling frequency
         desired_frames = 30
-        #f_total = self.ball_detector.last_basketball_detection(video_path) ###BASKETBALL
-        f_total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) ### NO BASKETBALL
+        f_total = self.ball_detector.last_basketball_detection_binary(video_path) ###BASKETBALL
+        #f_total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) ### NO BASKETBALL
+        self.final_frames[f'{video_name}'] = f_total
         if f_total is None:
             return None
         frame_indices = set(np.linspace(0, f_total - 1, num=desired_frames, dtype=int))
@@ -83,19 +90,26 @@ class VideoProcessor:
 
             # Sample frames
             if frame_count in frame_indices:
-                print(f"FRAME NUMBER {frame_count}")
+                print(f"Keypoint Extraction: FRAME NUMBER {frame_count}", end='\r')
                 ######## Pose Estimation #########
-                body_loc = np.array(self.pose_estimator.pose_estimation(frame)) # .reshape(1, -1)
-                #print(body_loc.shape)
+                body_loc = self.pose_estimator.pose_estimation(frame)
+                if body_loc is None:
+                    return None
+                body_loc = np.array(body_loc) # .reshape(1, -1)
+                #print(f"BODY_LOC SHAPE: {body_loc.shape}")
 
                 ######## Basketball Detection #########
-                #bask_loc = self.ball_detector.detect_ball(frame) ###BASKETBALL
-                #print(bask_loc) 
+                bask_loc = self.ball_detector.detect_ball(frame) ###BASKETBALL
+                #print(f"BASK_LOC SHAPE: {bask_loc}") 
 
                 # Merge keypoints
-                #kp = self.merge_keypoints(body_loc, bask_loc) ###BASKETBALL
-                #keypoints.append(kp) ###BASKETBALL
-                keypoints.append(body_loc) ### No BASKETBALL
+                try:
+                    kp = self.merge_keypoints(body_loc, bask_loc) ###BASKETBALL
+                except:
+                    return None
+                
+                keypoints.append(kp) ###BASKETBALL
+                #keypoints.append(body_loc) ### No BASKETBALL
 
 
                 processed_count += 1

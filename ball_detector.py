@@ -9,7 +9,7 @@ class BallDetector():
 
         self.model = YOLO("yolov8x.pt")
         self.frame_shape = frame_shape
-        self.conf_thresh = 0.15
+        self.conf_thresh = 0.08
 
     def detect_ball(self, frame, verbose=False):
 
@@ -83,16 +83,17 @@ class BallDetector():
         cap = cv2.VideoCapture(video_path)
         if not cap.isOpened():
             print("Error: Cannot open video.")
-            exit()
+            return None
 
         left = 0
         right = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) # total frames
         last_detected_frame = -1
         count = 0
         while (left < right)&(count<20):
-            print(last_detected_frame)
+            #print(last_detected_frame)
             mid = ((left + right + 1) // 2)
-            print(left, right, mid)
+            #print(left, right, mid)
+            print(f"Binary Search For Last Visible Basketball. Processing Frame: {mid}", end='\r')
             cap.set(cv2.CAP_PROP_POS_FRAMES, mid)
             ret, frame = cap.read()
             if not ret:
@@ -156,15 +157,15 @@ class BallDetector():
 if __name__ == "__main__":
     root_directory = os.path.dirname(os.path.abspath(__file__))
     parent_directory = os.path.dirname(root_directory)
-    unprocessed_directory = os.path.join(parent_directory, 'data', '01_videos', 'processed')
-    file_name = 'IMG_2662'
+    unprocessed_directory = os.path.join(parent_directory, 'data', '01_videos', 'unprocessed')
+    file_name = '87_miss'
     video_path = os.path.join(unprocessed_directory, f'{file_name}.mov')
     ball_detector = BallDetector()
     #specific_frame_number = ball_detector.last_basketball_detection(video_path=video_path)
-    specific_frame_number = 94
+    specific_frame_number = 167
     if specific_frame_number is None:
         exit
-    frames = numbers = list(range(86, 104))
+    #frames = numbers = list(range(86, 104))
 
     # Open the video
     cap = cv2.VideoCapture(video_path)
@@ -181,14 +182,13 @@ if __name__ == "__main__":
         print(f"Error: Could not read frame {specific_frame_number}.")
     else:
         # Process the specific frame
-        for num in frames:
-            frame_shape = frame.shape[:2]
-            ball_detector = BallDetector(frame_shape=frame_shape)
-            ball_loc = ball_detector.detect_ball(frame, verbose=True)
-            if ball_loc is None:
-                exit
-            print(f"Ball location at frame {num}: {ball_loc}")
-            ball_detector.plot_ball_on_frame(frame, ball_data = ball_loc)
+        frame_shape = frame.shape[:2]
+        ball_detector = BallDetector(frame_shape=frame_shape)
+        ball_loc = ball_detector.detect_ball(frame, verbose=True)
+        if ball_loc is None:
+            exit
+        print(f"Ball location at frame {specific_frame_number}: {ball_loc}")
+        ball_detector.plot_ball_on_frame(frame, ball_data = ball_loc)
 
     # Release the video capture object
     cap.release()

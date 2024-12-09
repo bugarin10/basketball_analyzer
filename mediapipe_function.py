@@ -54,7 +54,18 @@ class PoseEstimator():
 
         #print(detection_result)
 
-        return self.extract_landmarks(detection_result.pose_landmarks[0], visibility=True)
+        max_retries = 3
+        for i in range(max_retries):
+            try:
+                detection_result = self.detector.detect(image)
+                pose_data = self.extract_landmarks(detection_result.pose_landmarks[0], visibility=True)
+                return pose_data
+            except:
+                print(f"POSE LANDMARK EXTRACTION FAILED: ATTEMPT {i}")
+                continue
+            
+        print(f"FAILED TO EXTRACT MEDIAPIPE LANDMARKS")
+        return None
 
 
 if __name__=="__main__":

@@ -44,7 +44,7 @@ if __name__ == "__main__":
     root_directory = os.path.dirname(os.path.abspath(__file__))
     parent_directory = os.path.abspath(os.path.join(root_directory, '..', '..'))
     processed_directory = os.path.join(parent_directory, 'data', '01_videos', 'processed')
-    file_name = "IMG_2662"
+    file_name = "0_miss"
     video_path = os.path.join(processed_directory, f'{file_name}.mov')
 
     # Open the video
@@ -52,21 +52,21 @@ if __name__ == "__main__":
     if not cap.isOpened():
         print("Error: Cannot open video.")
         exit()
-
+    frame_num = 169
     # Set the frame position to the desired frame
-    cap.set(cv2.CAP_PROP_POS_FRAMES, 102)
+    cap.set(cv2.CAP_PROP_POS_FRAMES, frame_num)
 
     # Read the specific frame
     ret, frame = cap.read()
     if not ret:
-        print(f"Error: Could not read frame {102}.")
+        print(f"Error: Could not read frame {frame_num}.")
     
 
     # Example input: Keypoints array (11 frames, 34 keypoints, 3 values per keypoint)
     keypoints_directory = os.path.join(parent_directory, 'data', '02_keypoints')
     keypoints_path = os.path.join(keypoints_directory, f'{file_name}.npy')
     keypoints = np.load(keypoints_path)
-    frame_kp = keypoints[19] #### CHANGE BASED ON FRAME NUMBER
+    frame_kp = keypoints[29] #### CHANGE BASED ON FRAME NUMBER
 
     # Plot keypoints and basketball location on the first frame
     output_frame = plot_keypoints_first_frame(frame, frame_kp)
